@@ -3,5 +3,5 @@ output "vpc_id" {
 }
 
 output "kube_cp_sub_ids" {
-  value = { for sub in aws_subnet.kubecp : sub.tags["Name"] => sub.id }
+  value = { for sub in aws_subnet.cp : sub.tags["Name"] => sub.id }
 }

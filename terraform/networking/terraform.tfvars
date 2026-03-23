@@ -14,3 +14,6 @@ kubernetes_cp_subnets = {
     kube_cp_sub_cidr = "10.0.12.0/24"
   }
 }
+
+kubernetes_wk_subnet = "10.0.13.0/24"
+workstation_subnet = "10.0.14.0/24"
