@@ -36,7 +36,7 @@ variable "workstation_config" {
   }
 
   validation {
-    condition = length(regex("^10.0.14.", var.workstation_config.workstation_ip)) == 1 
+    condition = can(regex("^10.0.14.", var.workstation_config.workstation_ip))
     error_message = "Workstation IP must be on subnet 10.0.14.0/24."
   }
 

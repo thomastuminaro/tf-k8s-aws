@@ -1,3 +1,3 @@
 locals {
-  ami_ubuntu = "ami-04680790a315cd58d"
+  ami_ubuntu = "ami-04c332520bd9cedb4"
 }

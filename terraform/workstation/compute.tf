@@ -26,7 +26,8 @@ data "terraform_remote_state" "vpc" {
 
 resource "aws_network_interface" "workstation" {
   subnet_id = data.terraform_remote_state.vpc.outputs["workstation_sub_id"]
-  private_ip = [var.workstation_config.workstation_ip]
+  private_ip = var.workstation_config.workstation_ip
+  security_groups = [data.terraform_remote_state.vpc.outputs["sg_workstation_id"]]
 
   tags = merge(var.common_tags, {
     Name = "workstation_primary_nic"
@@ -40,8 +41,6 @@ resource "aws_instance" "workstation" {
   primary_network_interface {
     network_interface_id = aws_network_interface.workstation.id
   }  
-
-  vpc_security_group_ids = [data.terraform_remote_state.vpc.outputs["sg_workstation_id"]]
 
   root_block_device {
     delete_on_termination = true
@@ -57,4 +56,6 @@ resource "aws_instance" "workstation" {
     create_before_destroy = true
     ignore_changes = [ tags ]
   }
+
+  depends_on = [ aws_network_interface.workstation ]
 }
