@@ -37,6 +37,9 @@ resource "aws_network_interface" "workstation" {
 resource "aws_instance" "workstation" {
   instance_type = var.workstation_config.workstation_type
   ami = local.ami_ubuntu
+  key_name = "workstation" # for now Terraform not creating keys from scratch, using one created manually 
+
+  user_data = file("${path.module}/scripts/user_data.sh")
 
   primary_network_interface {
     network_interface_id = aws_network_interface.workstation.id

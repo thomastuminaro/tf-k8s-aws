@@ -9,7 +9,7 @@
 resource "aws_network_interface" "controlplane" {
   for_each = local.instance_sub_nic
   subnet_id = each.value.sub_id
-  private_ip = each.value.cp_ip
+  private_ips = [each.value.cp_ip]
   security_groups = [data.terraform_remote_state.networking.outputs["sg_cp_id"]]
 
   tags = merge(var.common_tags, {
@@ -21,6 +21,10 @@ resource "aws_instance" "cp" {
   for_each = local.instance_sub_nic
   ami = local.ami_ubuntu
   instance_type = var.cp_config_common.cp_type
+
+  user_data = templatefile("${path.module}/scripts/cp_user_data.sh", {
+    cp_hostname = each.key
+  })
 
   root_block_device {
     delete_on_termination = true

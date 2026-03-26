@@ -8,7 +8,7 @@
 
 resource "aws_network_interface" "worker" {
   subnet_id = data.terraform_remote_state.networking.outputs["kube_wk_sub_id"]
-  private_ip = var.worker_config.worker_ip
+  private_ips = [var.worker_config.worker_ip]
   security_groups = [data.terraform_remote_state.networking.outputs["sg_wk_id"]]
 
   tags = merge(var.common_tags, {
@@ -23,6 +23,8 @@ resource "aws_instance" "worker" {
   primary_network_interface {
     network_interface_id = aws_network_interface.worker.id
   }
+
+  user_data = file("${path.module}/scripts/wk_user_data.sh")
 
   root_block_device {
     delete_on_termination = true

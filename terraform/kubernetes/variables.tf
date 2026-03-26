@@ -63,29 +63,23 @@ variable "cp_config_common" {
   }
 }
 
-output "testing" {
-  value = values(var.cp_config)[0]["cp_ip"]
-}
-
 variable "cp_config" {
-  type = map(object({
-    cp_ip = string
-  }))
-
-/*   validation {
-    condition = alltrue([for cpip in [for ip in var.cp_config : ip] : can(regex("^10.0.1[012].", cpip))]) 
-    error_message = "controlplane IP must be on subnet 10.0.10.0/24 or 10.0.11.0/24 or 10.0.12.0/24."
-  }
+  type = map(string)
 
   validation {
-    condition = alltrue([for ip in values(var.cp_config): cidrnetmask("${ip["cp_ip"]}/24")])
+    condition = alltrue([for cpip in values(var.cp_config) : can(regex("^10.0.1[012].", cpip))]) 
+    error_message = "controlplane IP must be on subnet 10.0.10.0/24 or 10.0.11.0/24 or 10.0.12.0/24."
+  }
+  
+  validation {
+    condition = alltrue([for ip in values(var.cp_config): can(cidrnetmask("${ip}/24"))])
     error_message = "controlplane IP must be a valid IP."
   }
 
   validation {
     condition = length([for k in keys(var.cp_config) : k]) == 3
     error_message = "You must configure exactly 3 controlplane instances."
-  }  */
+  }  
 }
 
 variable "lb_config" {
