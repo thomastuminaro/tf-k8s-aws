@@ -54,12 +54,11 @@ resource "aws_instance" "cp" {
 #                                                                                                                                                        #
 ##########################################################################################################################################################
 
-# aws_lb, aws_lb_listner, aws_lb_target_group, aws_lb_listener_rule, aws_lb_target_group_attachment
-
 resource "aws_lb" "cp" {
   name = var.lb_config.lb_name
   internal = true
   load_balancer_type = var.lb_config.lb_type
+  security_groups = [ data.terraform_remote_state.networking.outputs["sg_lb_id"] ]
 
   subnets = [for sub in values(data.terraform_remote_state.networking.outputs["kube_cp_sub_ids"]) : sub] 
 
@@ -84,6 +83,14 @@ resource "aws_lb_target_group" "cp" {
   port = 6443
   protocol = "TCP"
   vpc_id = data.terraform_remote_state.networking.outputs["vpc_id"]
+
+  health_check {
+    healthy_threshold = 2
+    interval = 5
+    timeout = 4
+    path = "/healthz"
+    protocol = "HTTPS"
+  }
 }
 
 resource "aws_lb_target_group_attachment" "cp" {

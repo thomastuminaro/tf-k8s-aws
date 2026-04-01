@@ -18,4 +18,3 @@ echo "export PATH=$PATH:/root/.local/bin/" >> /root/.bashrc
 echo "" >> /home/ubuntu/.bashrc
 echo "export PATH=$PATH:/root/.local/bin/" >> /home/ubuntu/.bashrc
 
-# Configuring SSH to kubernetes nodes 

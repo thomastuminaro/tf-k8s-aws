@@ -271,7 +271,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_to_cp_wk" {
 
 resource "aws_security_group" "workstation" {
   name = "workstation-sg"
-  description = "Allows workerstation communications."
+  description = "Allows workstation communications."
   vpc_id = aws_vpc.main.id
   
   tags = merge(var.common_tags, {
@@ -315,4 +315,48 @@ resource "aws_vpc_security_group_egress_rule" "allow_ssh_to_wk_workstation" {
   ip_protocol = "tcp"
   from_port = 22
   to_port = 22
+}
+
+##########################################################################################################################################################
+# Load balancer config
+# Allow access from worker group all TCP, same for controlplane, and 6443 for workstation sg 
+# Allow outbound to 6443 controlplanes 
+##########################################################################################################################################################
+
+resource "aws_security_group" "lb" {
+  name = "lb-sg"
+  vpc_id = aws_vpc.main.id
+  description = "Allows communications of controlplane LB."
+
+  tags = merge(var.common_tags, {
+    Name = "lb-sg"
+  })
+}
+
+resource "aws_vpc_security_group_egress_rule" "lbcp" {
+  security_group_id = aws_security_group.lb.id
+  referenced_security_group_id = aws_security_group.cp.id
+  ip_protocol = "tcp"
+  from_port = 6443
+  to_port = 6443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "lbworker" {
+  security_group_id = aws_security_group.lb.id
+  referenced_security_group_id = aws_security_group.wk.id
+  ip_protocol = -1
+}
+
+resource "aws_vpc_security_group_ingress_rule" "lbcp" {
+  security_group_id = aws_security_group.lb.id
+  referenced_security_group_id = aws_security_group.cp.id
+  ip_protocol = -1
+}
+
+resource "aws_vpc_security_group_ingress_rule" "lbworkstation" {
+  security_group_id = aws_security_group.lb.id
+  referenced_security_group_id = aws_security_group.workstation.id
+  ip_protocol = "tcp"
+  from_port = 6443
+  to_port = 6443
 }
