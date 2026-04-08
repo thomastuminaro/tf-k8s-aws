@@ -23,7 +23,7 @@ resource "aws_instance" "cp" {
   instance_type = var.cp_config_common.cp_type
 
   user_data = templatefile("${path.module}/scripts/cp_user_data.sh", {
-    cp_hostname = each.key
+    cp_hostname = "${each.key}"
   })
 
   root_block_device {
@@ -83,6 +83,7 @@ resource "aws_lb_target_group" "cp" {
   port = 6443
   protocol = "TCP"
   vpc_id = data.terraform_remote_state.networking.outputs["vpc_id"]
+  preserve_client_ip = false
 
   health_check {
     healthy_threshold = 2

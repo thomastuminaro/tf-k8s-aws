@@ -1,0 +1,12 @@
+[controlplanes]
+controlplane-01
+controlplane-02
+controlplane-03
+
+[workers]
+worker
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=vagrant
+ansible_pass=password

@@ -172,7 +172,7 @@ resource "aws_route_table_association" "workstation" {
 
 ##########################################################################################################################################################
 # Control plane config
-# Allow access from workstation group 6443 + 22 /  worker group all traffic
+# Allow access from workstation group 6443 + 22 /  worker group all traffic + 6443 from lb group
 # Allow outbound to everywhere to pull images
 ##########################################################################################################################################################
 
@@ -190,6 +190,14 @@ resource "aws_vpc_security_group_egress_rule" "allow_egress_all_cp" {
   security_group_id = aws_security_group.cp.id
   cidr_ipv4 = "0.0.0.0/0"
   ip_protocol = -1
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_health_check_lb" {
+  security_group_id = aws_security_group.cp.id
+  referenced_security_group_id = aws_security_group.lb.id
+  from_port = 6443
+  to_port = 6443
+  ip_protocol = "tcp"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allow_ssh_from_workstation_cp" {
@@ -264,7 +272,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_to_cp_wk" {
 
 ##########################################################################################################################################################
 # Workstation config
-# Allow access to worker/cp group 22 /  controlplane group 6443
+# Allow access to worker/cp group 22 /  controlplane group 6443 + NFS 2049 to EFS sg
 # Allow outbound to everywhere everywhere
 # Allow inbound from 88.162.198.72 (own IP) SSH
 ##########################################################################################################################################################
@@ -299,6 +307,14 @@ resource "aws_vpc_security_group_egress_rule" "allow_kube_to_cp_workstation" {
   ip_protocol = "tcp"
   from_port = 6443
   to_port = 6443
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_workstation_to_nfs" {
+  security_group_id = aws_security_group.workstation.id
+  referenced_security_group_id = aws_security_group.efs.id
+  ip_protocol = "tcp"
+  from_port = 2049
+  to_port = 2049
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_ssh_to_cp_workstation" {
@@ -359,4 +375,27 @@ resource "aws_vpc_security_group_ingress_rule" "lbworkstation" {
   ip_protocol = "tcp"
   from_port = 6443
   to_port = 6443
+}
+
+##########################################################################################################################################################
+# Target group config - EFS 
+# Allow access from workstation group 2049 
+##########################################################################################################################################################
+
+resource "aws_security_group" "efs" {
+  vpc_id = aws_vpc.main.id
+  name = "efs-sg"
+  description = "Allows access from workstation to EFS file share."
+
+  tags = merge(var.common_tags, {
+    Name = "efs-sg"
+  })  
+}
+
+resource "aws_vpc_security_group_ingress_rule" "efs" {
+  security_group_id = aws_security_group.efs.id
+  referenced_security_group_id = aws_security_group.workstation.id
+  ip_protocol = "tcp"
+  from_port = 2049
+  to_port = 2049
 }

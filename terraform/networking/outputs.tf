@@ -29,3 +29,7 @@ output "sg_workstation_id" {
 output "sg_lb_id" {
   value = aws_security_group.lb.id
 }
+
+output "sg_efs_id" {
+  value = aws_security_group.efs.id
+}

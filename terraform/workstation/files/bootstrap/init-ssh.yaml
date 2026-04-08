@@ -1,0 +1,5 @@
+---
+- name: Setting up SSH keys for all hosts
+  hosts: all
+  become: true
+  

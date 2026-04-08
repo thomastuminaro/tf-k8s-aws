@@ -1,24 +1,6 @@
 ##########################################################################################################################################################
 #                                                                                                                                                        #
 #                                                                                                                                                        #
-#                                                                   NETWORKING DATA                                                                      #
-#                                                                                                                                                        #
-#                                                                                                                                                        #
-##########################################################################################################################################################
-
-data "terraform_remote_state" "vpc" {
-  backend = "s3"
-
-  config = {
-    bucket = "aws-remote-backend-tf"
-    key = "networking/terraform.tfstate"
-    region = "eu-west-3"
-  }
-}
-
-##########################################################################################################################################################
-#                                                                                                                                                        #
-#                                                                                                                                                        #
 #                                                                        EC2                                                                             #
 #                                                                                                                                                        #
 #                                                                                                                                                        #
@@ -39,7 +21,9 @@ resource "aws_instance" "workstation" {
   ami = local.ami_ubuntu
   key_name = "workstation" # for now Terraform not creating keys from scratch, using one created manually 
 
-  user_data = file("${path.module}/scripts/user_data.sh")
+  user_data = templatefile("${path.module}/scripts/user_data.sh", {
+    efs_dns = data.terraform_remote_state.efs.outputs["efs_dns"]
+  })
 
   primary_network_interface {
     network_interface_id = aws_network_interface.workstation.id
