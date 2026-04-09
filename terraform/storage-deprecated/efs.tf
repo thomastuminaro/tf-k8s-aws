@@ -1,4 +1,4 @@
-resource "aws_efs_file_system" "share" {
+/* resource "aws_efs_file_system" "share" {
   creation_token = "ansible-scripts"
 
   tags = merge(var.common_tags, {
@@ -20,7 +20,7 @@ resource "aws_efs_mount_target" "share" {
   security_groups = [ data.terraform_remote_state.networking.outputs["sg_efs_id"] ]
 }
 
-/* data "aws_iam_policy_document" "policy" {
+data "aws_iam_policy_document" "policy" {
   statement {
     sid    = "Allow from workstation"
     effect = "Allow"

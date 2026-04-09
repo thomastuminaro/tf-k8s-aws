@@ -1,12 +1,15 @@
 [controlplanes]
-controlplane-01
-controlplane-02
-controlplane-03
+10.0.10.10
+10.0.11.10
+10.0.12.10
 
 [workers]
-worker
+10.0.13.10
 
 [all:vars]
 ansible_connection=ssh
-ansible_user=vagrant
-ansible_pass=password
+ansible_user=ubuntu
+ansible_ssh_pass=password
+ansible_become_method=sudo
+ansible_become_password=password
+ansible_ssh_common_args: '-o PreferredAuthentications=password -o PubkeyAuthentication=no'

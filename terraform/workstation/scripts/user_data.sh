@@ -18,9 +18,14 @@ echo "export PATH=$PATH:/root/.local/bin/" >> /root/.bashrc
 echo "" >> /home/ubuntu/.bashrc
 echo "export PATH=$PATH:/root/.local/bin/" >> /home/ubuntu/.bashrc
 
-# Accessing network share
+# Install AWS utility CLI 
+apt-get install -y unzip curl
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
 
-mkdir /nfs
-apt-get install -y nfs-common
-mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport $efs_dns:/ /nfs
-# Will check permanent after 
+# Get ansible files 
+mkdir /opt/ansible
+aws s3 cp s3://ansible-config-bucket-tuminaro/ansible-defaults.cfg /opt/ansible
+aws s3 cp s3://ansible-config-bucket-tuminaro/inventory-defaults /opt/ansible
+aws s3 cp s3://ansible-config-bucket-tuminaro/init-ssh.yaml /opt/ansible

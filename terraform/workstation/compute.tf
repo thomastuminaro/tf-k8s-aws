@@ -19,10 +19,12 @@ resource "aws_network_interface" "workstation" {
 resource "aws_instance" "workstation" {
   instance_type = var.workstation_config.workstation_type
   ami = local.ami_ubuntu
-  key_name = "workstation" # for now Terraform not creating keys from scratch, using one created manually 
+  key_name = "workstation" # for now Terraform not creating keys from scratch, using one created manually
+
+  iam_instance_profile = aws_iam_instance_profile.workstation.name  
 
   user_data = templatefile("${path.module}/scripts/user_data.sh", {
-    efs_dns = data.terraform_remote_state.efs.outputs["efs_dns"]
+    efs_dns = "blank"
   })
 
   primary_network_interface {
@@ -44,5 +46,5 @@ resource "aws_instance" "workstation" {
     ignore_changes = [ tags ]
   }
 
-  depends_on = [ aws_network_interface.workstation ]
+  depends_on = [ aws_network_interface.workstation, aws_s3_bucket.scripts ]
 }
