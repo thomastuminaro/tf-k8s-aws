@@ -45,3 +45,23 @@ variable "workstation_config" {
     error_message = "Workstation IP must be a valid IP."
   }
 }
+
+variable "controlplanes" {
+  type = list(string)
+  default = ["controlplane-01", "controlplane-02", "controlplane-03"]
+}
+
+variable "workers" {
+  type = list(string)
+  default = ["worker"]
+}
+
+variable "pubkeysecret" {
+  type = string
+  default = "workstation-pubkey"
+}
+
+variable "privatekeysecret" {
+  type = string
+  default = "workstation-privatekey"
+}

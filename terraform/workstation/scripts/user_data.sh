@@ -18,14 +18,28 @@ echo "export PATH=$PATH:/root/.local/bin/" >> /root/.bashrc
 echo "" >> /home/ubuntu/.bashrc
 echo "export PATH=$PATH:/root/.local/bin/" >> /home/ubuntu/.bashrc
 
+# Set up DNS
+sed -i "s/nameserver 127.0.0.53/nameserver 169.254.169.253/g" /etc/resolv.conf
+sed -i -E "s/search ([a-z]*-[a-z]*-[1-4]{1}).compute.internal/search \1.compute.internal ${domain}/g" /etc/resolv.conf
+
 # Install AWS utility CLI 
 apt-get install -y unzip curl
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
 
+# Set up SSH keys
+apt-get install -y jq
+mkdir /root/.ssh
+chmod 700 /root/.ssh
+aws secretsmanager get-secret-value --secret-id ${secretprivatekeyarn} | jq -r ".SecretString" > /root/.ssh/id_ed25519
+aws secretsmanager get-secret-value --secret-id ${secretpubkeyarn} | jq -r ".SecretString" > /root/.ssh/id_ed25519.pub
+chmod 600 /root/.ssh/id_ed25519
+chmod 644 /root/.ssh/id_ed25519.pub
+systemctl restart ssh
+
 # Get ansible files 
 mkdir /opt/ansible
-aws s3 cp s3://ansible-config-bucket-tuminaro/ansible-defaults.cfg /opt/ansible
+aws s3 cp s3://ansible-config-bucket-tuminaro/ansible.cfg /opt/ansible
 aws s3 cp s3://ansible-config-bucket-tuminaro/inventory-defaults /opt/ansible
-aws s3 cp s3://ansible-config-bucket-tuminaro/init-ssh.yaml /opt/ansible
+chown -R ubuntu:ubuntu /opt/ansible

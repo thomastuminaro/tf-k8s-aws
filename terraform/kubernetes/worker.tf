@@ -19,12 +19,16 @@ resource "aws_network_interface" "worker" {
 resource "aws_instance" "worker" {
   ami = local.ami_ubuntu
   instance_type = var.worker_config.worker_type
-  
+  iam_instance_profile = aws_iam_instance_profile.kubernetes.name
+
   primary_network_interface {
     network_interface_id = aws_network_interface.worker.id
   }
 
-  user_data = file("${path.module}/scripts/wk_user_data.sh")
+  user_data = templatefile("${path.module}/scripts/wk_user_data.sh", {
+    domain = "${data.terraform_remote_state.networking.outputs["domain"]}",
+    secretpubkeyarn = "${data.terraform_remote_state.workstation.outputs["secretpubkeyarn"]}"
+  })
 
   root_block_device {
     delete_on_termination = true

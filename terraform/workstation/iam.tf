@@ -4,7 +4,7 @@
 ##########################################################################################################################################################
 
 resource "aws_iam_role" "workstation" {
-  name = "workstation-s3"
+  name = "workstation-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -21,7 +21,7 @@ resource "aws_iam_role" "workstation" {
   })
 
   tags = merge(var.common_tags, {
-    Name = "workstation-s3"
+    Name = "workstation-role"
   })
 }
 
@@ -63,14 +63,45 @@ resource "aws_iam_policy" "allowS3workstation" {
 }
 
 ##########################################################################################################################################################
-# Attach policy to role
+# Policy allowing access to secrets
 ##########################################################################################################################################################
 
-resource "aws_iam_role_policy_attachment" "workstation" {
+resource "aws_iam_policy" "allowsecretworkstation" {
+  name = "allow_workstation_secret_bucket"
+  path = "/"
+  description = "Will allow workstation to fetch secrets from secretmanager."
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "${aws_secretsmanager_secret.pubkey.arn}",
+          "${aws_secretsmanager_secret.privatekey.arn}"
+        ]
+      },
+    ]
+  })
+}
+
+
+##########################################################################################################################################################
+# Attach policies to role
+##########################################################################################################################################################
+
+resource "aws_iam_role_policy_attachment" "workstations3" {
   role = aws_iam_role.workstation.id
   policy_arn = aws_iam_policy.allowS3workstation.arn
 }
 
+resource "aws_iam_role_policy_attachment" "workstationsecret" {
+  role = aws_iam_role.workstation.id
+  policy_arn = aws_iam_policy.allowsecretworkstation.arn
+}
 
 ##########################################################################################################################################################
 # Instance profile for EC2

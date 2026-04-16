@@ -16,22 +16,27 @@ resource "aws_s3_bucket" "scripts" {
 
 resource "aws_s3_object" "ansible_config" {
   bucket = aws_s3_bucket.scripts.bucket
-  key = "ansible-defaults.cfg"
-  source = "${path.root}/files/bootstrap/ansible-defaults.cfg"
+  key = "ansible.cfg"
+  source = "${path.root}/files/bootstrap/ansible.cfg"
+}
+
+resource "local_file" "inventory" {
+  content = templatefile("${path.module}/files/bootstrap/templates/inventory.tftpl", {
+        wks = var.workers,
+        cps = var.controlplanes
+    })
+    filename = "${path.module}/files/bootstrap/inventory"
 }
 
 resource "aws_s3_object" "ansible_inventory" {
   bucket = aws_s3_bucket.scripts.bucket
   key = "inventory-defaults"
-  source = "${path.root}/files/bootstrap/inventory-defaults"
+  source = "${path.root}/files/bootstrap/inventory"
 }
 
-resource "aws_s3_object" "ansible_base_playbook" {
-  bucket = aws_s3_bucket.scripts.bucket
-  key = "init-ssh.yaml"
-  source = "${path.module}/files/bootstrap/init-ssh.yaml"
-}
-
-output "test" {
-    value = "${path.root}"
+resource "null_resource" "deleteTemp" {
+  depends_on = [ aws_s3_object.ansible_inventory ]
+  provisioner "local-exec" {
+    command = "rm -f ${local_file.inventory.filename}"
+  }
 }

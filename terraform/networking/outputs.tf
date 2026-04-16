@@ -33,3 +33,7 @@ output "sg_lb_id" {
 output "sg_efs_id" {
   value = aws_security_group.efs.id
 }
+
+output "domain" {
+  value = var.kubernetes_domain
+}

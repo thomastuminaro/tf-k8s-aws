@@ -95,3 +95,32 @@ variable "workstation_subnet" {
     error_message = "Please provide valid CIDR for workstation subnet."
   }
 }
+
+##########################################################################################################################################################
+#                                                                                                                                                        #
+#                                                                                                                                                        #
+#                                                                  PRIVATE HOSTED ZONE                                                                   #
+#                                                                                                                                                        #
+#                                                                                                                                                        #
+##########################################################################################################################################################
+
+variable "kubernetes_domain" {
+  type = string
+  default = "kubernetes.local"
+}
+
+variable "controlplanes-fqdn" {
+  type = map(string)
+  default = {
+    "controplane-01" = "10.0.10.10",
+    "controplane-02" = "10.0.11.10",
+    "controplane-03" = "10.0.12.10"
+  }
+}
+
+variable "workers-fqdn" {
+  type = map(string)
+  default = {
+    "worker" = "10.0.13.10",
+  }
+}

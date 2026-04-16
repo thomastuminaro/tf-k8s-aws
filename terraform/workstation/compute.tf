@@ -24,7 +24,9 @@ resource "aws_instance" "workstation" {
   iam_instance_profile = aws_iam_instance_profile.workstation.name  
 
   user_data = templatefile("${path.module}/scripts/user_data.sh", {
-    efs_dns = "blank"
+    domain = "${data.terraform_remote_state.vpc.outputs["domain"]}",
+    secretpubkeyarn = "${aws_secretsmanager_secret.pubkey.arn}",
+    secretprivatekeyarn = "${aws_secretsmanager_secret.privatekey.arn}"
   })
 
   primary_network_interface {

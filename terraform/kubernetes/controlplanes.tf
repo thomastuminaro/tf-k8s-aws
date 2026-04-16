@@ -21,9 +21,12 @@ resource "aws_instance" "cp" {
   for_each = local.instance_sub_nic
   ami = local.ami_ubuntu
   instance_type = var.cp_config_common.cp_type
+  iam_instance_profile = aws_iam_instance_profile.kubernetes.name
 
   user_data = templatefile("${path.module}/scripts/cp_user_data.sh", {
-    cp_hostname = "${each.key}"
+    domain = "${data.terraform_remote_state.networking.outputs["domain"]}",
+    cp_hostname = "${each.key}",
+    secretpubkeyarn = "${data.terraform_remote_state.workstation.outputs["secretpubkeyarn"]}"
   })
 
   root_block_device {
