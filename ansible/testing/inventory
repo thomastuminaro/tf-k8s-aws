@@ -1,2 +1,5 @@
 [test]
-ec2-13-38-61-213.eu-west-3.compute.amazonaws.com ansible_ssh_private_key_file=/Users/thomastuminaro/Downloads/workstation.pem
+ec2-51-44-9-147.eu-west-3.compute.amazonaws.com ansible_ssh_private_key_file=/Users/thomastuminaro/Downloads/workstation.pem
+
+[testwk]
+ec2-13-36-36-225.eu-west-3.compute.amazonaws.com ansible_ssh_private_key_file=/Users/thomastuminaro/Downloads/workstation.pem

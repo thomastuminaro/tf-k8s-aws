@@ -112,9 +112,9 @@ variable "kubernetes_domain" {
 variable "controlplanes-fqdn" {
   type = map(string)
   default = {
-    "controplane-01" = "10.0.10.10",
-    "controplane-02" = "10.0.11.10",
-    "controplane-03" = "10.0.12.10"
+    "controlplane-01" = "10.0.10.10",
+    "controlplane-02" = "10.0.11.10",
+    "controlplane-03" = "10.0.12.10"
   }
 }
 
@@ -122,5 +122,25 @@ variable "workers-fqdn" {
   type = map(string)
   default = {
     "worker" = "10.0.13.10",
+  }
+}
+
+##########################################################################################################################################################
+#                                                                                                                                                        #
+#                                                                                                                                                        #
+#                                                                     LOAD BALANCER                                                                      #
+#                                                                                                                                                        #
+#                                                                                                                                                        #
+##########################################################################################################################################################
+
+variable "lb_config" {
+  type = object({
+    lb_name = string
+    lb_type = string 
+  })
+
+  default = {
+    lb_name = "controlplane-lb"
+    lb_type = "network"
   }
 }

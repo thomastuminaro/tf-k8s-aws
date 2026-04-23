@@ -1,9 +1,0 @@
----
-- name: Setting up SSH keys for all hosts
-  hosts: workers
-  become: true
-  tasks:
-    - ansible.posix.authorized_key:
-       user: ubuntu
-       state: present
-       key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"

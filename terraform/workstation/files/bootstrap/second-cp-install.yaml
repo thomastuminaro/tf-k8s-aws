@@ -1,6 +1,6 @@
 ---
-- name: Configuring Kubernetes control plane node
-  hosts: test
+- name: Configuring other Kubernetes control plane node
+  hosts: controlplanes
   tasks:
     - name: Setting up IPv4 forward kernel parameter
       ansible.posix.sysctl:
@@ -85,15 +85,15 @@
           - helm
         state: present
     - name: Copy ansible config file
-      ansible.builtin.copy:
-        src: ./files/kubeadm-init-main.yaml
-        dest: /root/kubeadm-init-main.yaml
+      ansible.builtin.template:
+        src: /opt/ansible/templates/kubeadm-join-cp.j2
+        dest: /root/kubeadm-config.yaml
         mode: 644
         owner: root
         group: root
     - name: Set up main controlplane
       ansible.builtin.command:
-        cmd: kubeadm init --config /root/kubeadm-init-main.yaml --upload-certs
+        cmd: kubeadm join --config /root/kubeadm-config.yaml 
         creates: /etc/kubernetes/admin.conf
     - name: Set up kubeconfig folder for root user
       ansible.builtin.file:
@@ -111,17 +111,6 @@
         owner: root
         group: root
       run_once: true 
-    - name: Add Cilium Helm chart repo
-      kubernetes.core.helm_repository:
-        name: cilium
-        repo_url: "https://helm.cilium.io"
-      notify: helm update repo     
-    - name: Install CNI Cilium
-      kubernetes.core.helm:
-        chart_ref: cilium/cilium
-        chart_version: 1.19.3
-        release_name: cilium
-        release_namespace: kube-system
         
   handlers:
     - name: Restart containerd
@@ -131,6 +120,3 @@
     - name: apt update
       ansible.builtin.apt:
         update_cache: true
-    - name: helm update repo
-      ansible.builtin.command:
-        cmd: helm repo update 

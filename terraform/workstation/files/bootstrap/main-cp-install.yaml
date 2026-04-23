@@ -1,6 +1,6 @@
 ---
-- name: Configuring Kubernetes control plane node
-  hosts: test
+- name: Configuring Kubernetes first control plane node
+  hosts: maincp
   tasks:
     - name: Setting up IPv4 forward kernel parameter
       ansible.posix.sysctl:
@@ -85,15 +85,15 @@
           - helm
         state: present
     - name: Copy ansible config file
-      ansible.builtin.copy:
-        src: ./files/kubeadm-init-main.yaml
-        dest: /root/kubeadm-init-main.yaml
+      ansible.builtin.template:
+        src: /opt/ansible/templates/kubeadm-init-main.j2
+        dest: /root/kubeadm-config.yaml
         mode: 644
         owner: root
         group: root
     - name: Set up main controlplane
       ansible.builtin.command:
-        cmd: kubeadm init --config /root/kubeadm-init-main.yaml --upload-certs
+        cmd: kubeadm init --config /root/kubeadm-config.yaml --upload-certs
         creates: /etc/kubernetes/admin.conf
     - name: Set up kubeconfig folder for root user
       ansible.builtin.file:

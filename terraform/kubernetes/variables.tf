@@ -82,7 +82,7 @@ variable "cp_config" {
   }  
 }
 
-variable "lb_config" {
+/* variable "lb_config" {
   type = object({
     lb_name = string
     lb_type = string 
@@ -92,4 +92,4 @@ variable "lb_config" {
     lb_name = "controlplane-lb"
     lb_type = "network"
   }
-}
+} */

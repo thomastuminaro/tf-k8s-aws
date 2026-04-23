@@ -37,3 +37,11 @@ output "sg_efs_id" {
 output "domain" {
   value = var.kubernetes_domain
 }
+
+output "lb_arn" {
+  value = aws_lb.cp.arn
+}
+
+output "lb_dns" {
+  value = aws_lb.cp.dns_name
+}

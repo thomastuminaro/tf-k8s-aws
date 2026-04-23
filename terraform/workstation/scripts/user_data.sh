@@ -38,8 +38,32 @@ chmod 600 /root/.ssh/id_ed25519
 chmod 644 /root/.ssh/id_ed25519.pub
 systemctl restart ssh
 
-# Get ansible files 
+# Get ansible files for inventory and config
 mkdir /opt/ansible
 aws s3 cp s3://ansible-config-bucket-tuminaro/ansible.cfg /opt/ansible
 aws s3 cp s3://ansible-config-bucket-tuminaro/inventory-defaults /opt/ansible
 chown -R ubuntu:ubuntu /opt/ansible
+
+# Get ansible playbook and template for main control plane init
+aws s3 cp s3://ansible-config-bucket-tuminaro/main-cp-install.yaml /opt/ansible
+mkdir /opt/ansible/templates
+aws s3 cp s3://ansible-config-bucket-tuminaro/kubeadm-init-main.j2 /opt/ansible/templates
+
+# Get ansible playbook and template for other control planes to join cluster
+aws s3 cp s3://ansible-config-bucket-tuminaro/second-cp-install.yaml /opt/ansible
+aws s3 cp s3://ansible-config-bucket-tuminaro/kubeadm-join-cp.j2 /opt/ansible/templates
+
+# Get ansible playbook and template for worker nodes to join cluster
+aws s3 cp s3://ansible-config-bucket-tuminaro/worker-install.yaml /opt/ansible
+aws s3 cp s3://ansible-config-bucket-tuminaro/kubeadm-join-wk.j2 /opt/ansible/templates
+
+# Get group vars file
+mkdir /opt/ansible/group_vars
+aws s3 cp s3://ansible-config-bucket-tuminaro/all.yaml /opt/ansible/group_vars
+
+
+
+
+
+
+

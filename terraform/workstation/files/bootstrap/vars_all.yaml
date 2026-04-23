@@ -1,0 +1,2 @@
+containerd_version: 2.2.1-0ubuntu1~22.04.1
+kube_version: 1.35.4-1.1

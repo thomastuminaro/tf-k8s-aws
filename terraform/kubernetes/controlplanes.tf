@@ -57,7 +57,7 @@ resource "aws_instance" "cp" {
 #                                                                                                                                                        #
 ##########################################################################################################################################################
 
-resource "aws_lb" "cp" {
+/* resource "aws_lb" "cp" {
   name = var.lb_config.lb_name
   internal = true
   load_balancer_type = var.lb_config.lb_type
@@ -68,10 +68,10 @@ resource "aws_lb" "cp" {
   tags = merge(var.common_tags, {
     Name = "${var.lb_config.lb_name}"
   })  
-}
+} */
 
 resource "aws_lb_listener" "cp" {
-  load_balancer_arn = aws_lb.cp.arn
+  load_balancer_arn = data.terraform_remote_state.networking.outputs["lb_arn"]
   port = "6443"
   protocol = "TCP"
 
@@ -82,7 +82,7 @@ resource "aws_lb_listener" "cp" {
 }
 
 resource "aws_lb_target_group" "cp" {
-  name = "${var.lb_config.lb_name}-tg"
+  name = "controlplane-tg"
   port = 6443
   protocol = "TCP"
   vpc_id = data.terraform_remote_state.networking.outputs["vpc_id"]
