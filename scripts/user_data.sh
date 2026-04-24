@@ -61,9 +61,7 @@ aws s3 cp s3://ansible-config-bucket-tuminaro/kubeadm-join-wk.j2 /opt/ansible/te
 mkdir /opt/ansible/group_vars
 aws s3 cp s3://ansible-config-bucket-tuminaro/all.yaml /opt/ansible/group_vars
 
-# Add files to copy to hosts
-mkdir /opt/ansible/files
-aws s3 cp s3://ansible-config-bucket-tuminaro/config.toml /opt/ansible/files
+
 
 
 

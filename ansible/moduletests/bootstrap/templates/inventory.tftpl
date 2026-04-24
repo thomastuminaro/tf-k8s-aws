@@ -1,0 +1,12 @@
+[maincp]
+${maincp}
+
+[controlplanes]
+%{ for cp in cps ~}
+${cp}
+%{ endfor ~}
+
+[workers]
+%{ for wk in wks ~}
+${wk}
+%{ endfor ~}

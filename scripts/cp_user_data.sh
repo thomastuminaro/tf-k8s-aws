@@ -20,7 +20,6 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 # Set up SSH keys
-apt-get install -y jq
 mkdir /root/.ssh
 chmod 700 /root/.ssh
 mkdir /home/ubuntu/.ssh

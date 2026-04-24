@@ -7,7 +7,7 @@ sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/g' /etc/ssh/ssh
 sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/g' /etc/ssh/sshd_config 
 systemctl restart ssh
 
-hostnamectl set-hostname ${cp_hostname}
+hostnamectl set-hostname worker
 
 # Set up DNS
 sed -i "s/nameserver 127.0.0.53/nameserver 169.254.169.253/g" /etc/resolv.conf

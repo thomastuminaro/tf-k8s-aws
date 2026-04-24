@@ -1,0 +1,136 @@
+---
+- name: Configuring Kubernetes first control plane node
+  hosts: maincp
+  tasks:
+    - name: Setting up IPv4 forward kernel parameter
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        state: present
+    - name: Update APT repositories
+      ansible.builtin.apt:
+        update_cache: true
+    - name: Install containerd
+      ansible.builtin.apt:
+        name: containerd={{ containerd_version }}
+        state: present
+    - name: Create containerd configuration folder
+      ansible.builtin.file:
+        path: /etc/containerd
+        state: directory
+        owner: root
+        group: root
+        mode: "0644"
+    - name: Generate containerd configuration
+      ansible.builtin.copy:
+        src: ./files/config.toml
+        dest: /etc/containerd/config.toml
+        owner: root
+        group: root
+        mode: "644"
+      notify: Restart containerd
+    - name: Add required packages to install Kubernetes
+      ansible.builtin.apt:
+        name: 
+          - apt-transport-https 
+          - ca-certificates 
+          - curl 
+          - gpg
+        state: present
+    - name: Creating apt keyrings repository
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+    - name: Download public keys for Kubernetes package repository
+      ansible.builtin.command:
+        cmd: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key -o /tmp/Release.key
+        creates: /tmp/Release.key
+    - name: Sets up public keys for the Kubernetes repo
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/Release.key
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - name: Add Kubernetes APT repository
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.35/deb/ /
+        filename: kubernetes.list
+        state: present
+      notify: apt update
+    - name: Install Kubernetes components
+      ansible.builtin.apt:
+        name:
+          - kubeadm={{ kube_version }}
+          - kubelet={{ kube_version }}
+          - kubectl={{ kube_version }}
+        state: present
+    - name: Download public keys for Helm package repository
+      ansible.builtin.command:
+        cmd: curl -fsSL https://packages.buildkite.com/helm-linux/helm-debian/gpgkey -o /tmp/HelmRelease.key
+        creates: /tmp/HelmRelease.key
+    - name: Sets up public keys for the Helm repo
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /etc/apt/keyrings/helm-apt-keyring.gpg /tmp/HelmRelease.key
+        creates: /etc/apt/keyrings/helm-apt-keyring.gpg
+    - name: Add Helm APT repository
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/etc/apt/keyrings/helm-apt-keyring.gpg] https://packages.buildkite.com/helm-linux/helm-debian/any/ any main
+        filename: helm.list
+        state: present
+      notify: apt update
+    - name: Install Helm
+      ansible.builtin.apt:
+        name:
+          - helm
+        state: present
+    - name: Copy ansible config file
+      ansible.builtin.template:
+        src: /opt/ansible/templates/kubeadm-init-main.j2
+        dest: /root/kubeadm-config.yaml
+        mode: 644
+        owner: root
+        group: root
+    - name: Set up main controlplane
+      ansible.builtin.command:
+        cmd: kubeadm init --config /root/kubeadm-config.yaml --upload-certs
+        creates: /etc/kubernetes/admin.conf
+    - name: Set up kubeconfig folder for root user
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+    - name: Set up kubeconfig for root user
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: true
+        mode: 600
+        owner: root
+        group: root
+      run_once: true 
+    - name: Add Cilium Helm chart repo
+      kubernetes.core.helm_repository:
+        name: cilium
+        repo_url: "https://helm.cilium.io"
+      notify: helm update repo     
+    - name: Install CNI Cilium
+      kubernetes.core.helm:
+        chart_ref: cilium/cilium
+        chart_version: 1.19.3
+        release_name: cilium
+        release_namespace: kube-system
+        
+  handlers:
+    - name: Restart containerd
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted
+    - name: apt update
+      ansible.builtin.apt:
+        update_cache: true
+    - name: helm update repo
+      ansible.builtin.command:
+        cmd: helm repo update 
